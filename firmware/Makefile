@@ -1,5 +1,6 @@
-OS100VERSION := $(shell cat $(TOP)RELEASENUMBER)
+OS100VERSION := $(shell cat $(TOP)VERSION)
 RELEASE_NAME := firmware-$(OS100VERSION)
+CONFIG_FILE := onyx.config
 
 CFLAGS := -Os -gdwarf-2 -mcpu=cortex-m3 -mthumb -march=armv7-m \
 	-lnostdlib -ffunction-sections -fdata-sections -Wl,--gc-sections \
@@ -104,6 +105,18 @@ upload:	release
 	sudo modprobe ftdi_sio
 	@echo
 	@echo "All seems to have worked fine ;-)"
+
+configure:
+	@echo
+	@echo "Checking for config file ($(CONFIG_FILE))..."
+	[ -e $(CONFIG_FILE) ] || exit
+	@echo
+	@echo
+	@echo "Configuring device..."
+	cat /dev/ttyUSB0 >onyx.log & PID=$$!
+	cat $(CONFIG_FILE) > /dev/ttyUSB0
+	kill $(PID)
+	cat onyx.log
 
 monitor:
 	screen /dev/ttyUSB0 115200
